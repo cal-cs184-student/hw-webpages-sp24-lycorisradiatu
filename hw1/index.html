@@ -20,10 +20,11 @@
 <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
 </head>
 
-
 <body>
 
-<a href="https://cal-cs184-student.github.io/hw-webpages-sp24-lycorisradiatu/hw1/index.html">link to my hw1 webpage</a>
+<p align="middle">
+  <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-lycorisradiatu/hw1/index.html">Link to my hw1 webpage: https://cal-cs184-student.github.io/hw-webpages-sp24-lycorisradiatu/hw1/index.html <img align="middle"></a>
+</p>
 
 <h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
 <h1 align="middle">Homework 1: Rasterizer</h1>
@@ -157,6 +158,7 @@
   When alpha equal to 1, the pixel is right at Va. The point that has same distance to Va, Vb, and Vc combines the color red, green, 
   and blue equally. 
 </p>
+
 <div align="middle">
   <table style="width:100%">
     <tr align="middle">
@@ -175,9 +177,8 @@
   </table>
 </div>
 
-
-
 <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+
 <p align="middle">Explain pixel sampling in your own words and describe 
   how you implemented it to perform texture mapping. Briefly discuss the two di
   fferent pixel sampling methods, nearest and bilinear.</p>
@@ -188,7 +189,6 @@
   this (u,v), which is simply getting the rounded (u,v) coordinates, or using bilinear sample, which require getting four nearest
   point of this (u,v) and calculate a color with these four point based on their distance and contributes fractions to the color value.
 </p>
-
 
 <div align="middle">
   <table style="width:100%">
@@ -217,8 +217,8 @@
   nearest point sample only gives antialias along a specifical axis depends on the location of the point, which it has more jaggies.
 </p>
 
-
 <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+
 <p align="middle">Explain level sampling in your own words and describe how you implemented it for texture mapping.</p>
 For each point we have in x, y, we want to explore further more on textures's details. We want to filter out high frequency if our
 pixel's area 1*1 is not enought to fit in more texture color, that is more than 1*1 of texture space, hence we need to down sample the 
@@ -263,6 +263,7 @@ Among all combinations of pixel sampling and level sampling, while P_LINEAR has 
 </div>
 
 <h2 align="middle">Section III: Art Competition</h2>
+
 <p>If you are not participating in the optional art competition, don't worry about this section!</p>
 
 <h3 align="middle">Part 7: Draw something interesting!</h3>
