@@ -233,7 +233,8 @@ about value D.
 You can now adjust your sampling technique by selecting pixel sampling, level sampling, or the number of samples per pixel. Describe the tradeoffs between speed, memory usage, and antialiasing power between the three various techniques.
 </p>
 <p align="middle">
-Among all combinations of pixel sampling and level sampling, while P_LINEAR has a better antialiasing power but it has a slow runtime speed and using more memory space. Same things goes for L_LINEAR, uses twice amount of memory as of it fetching two levels of sampling, twice slow as P_LINEAR. On the other size, P_NEAR and L_LINEAR, gives a decent 
+Among all combinations of pixel sampling and level sampling, while P_LINEAR has a better antialiasing power but it has a slow runtime speed and using more memory space. Same things goes for L_LINEAR, uses twice amount of memory as of it fetching two levels of sampling, twice slow as P_LINEAR. On the other size, P_NEAR and L_Near will be much more faster. In General, if the image that we try to draw is flat, using P_NEAR L_ZERO will provide a good result since we don't need to filter out high frequency. If the image that we try to draw have some depths, using some combination of P_NEAR and L_NEAR will provide a good picture. However, if we uses Trilinear on a shrinked 
+detailed image, the result picture will be rather over blurred.
 </p>
 
 <div align="middle">
