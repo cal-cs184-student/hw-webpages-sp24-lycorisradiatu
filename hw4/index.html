@@ -1,7 +1,251 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Homework 4 index.html here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Mesh Editor</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2017</h1>
+<h1 align="middle">Project 4: Cloth Simulator</h1>
+<h2 align="middle">Youxun Liu and Angel Tu</h2>
+<h2 align="middle">Website URL: <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-lycorisradiatu/hw4/index.html">https://cal-cs184-student.github.io/hw-webpages-sp24-lycorisradiatu/hw4/index.html</a></h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>In this project, we implemented a real-time simulation of cloth using a mass and spring based system. Specifically, we worked
+  on building the data structures to discretely represent the cloth, defining and apply physical constraints on them, and applying
+   numerical integration to simulate the way cloth moves over time. We also implemented collisions with other objects as well as self-collisions to prevent cloth clipping.
+</p>
+
+<h2 align="middle">Part I: Masses and springs</h2>
+<b>Take some screenshots of scene/pinned2.json from a viewing angle where you can clearly see the cloth wireframe to show the structure of your point masses and springs.</b>
+<p>
+  <div align="middle">
+    <img src="images/1detail.png" align="middle" width="50%">
+  </div>
+</p>  
+
+<b>
+  Show us what the wireframe looks like (1) without any shearing constraints, (2) with only shearing constraints, and (3) with all constraints.</b>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/1noshear.png" align="middle" width="400px"/>
+          <figcaption>1. without shearing</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr align="center">
+        <td>
+          <img src="images/1onlyshear.png" align="middle" width="400px"/>
+          <figcaption>2. only shearing</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr align="center">
+        <td>
+          <img src="images/1everything.png" align="middle" width="400px"/>
+          <figcaption>3. Everything</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+
+  <h2 align="middle">Part II: Simulation via numerical integration</h2>
+
+  <b>Experiment with some the parameters in the simulation. To do so, pause the simulation at the start with P, modify the values of interest, and then resume by pressing P again. You can also restart the simulation at any time from the cloth's starting position by pressing R</b>
+  <p>The effect of changing the spring constant: for making the spring constant lower will make the cloth look more silky, relaxed, and soft, on the other hand higher spring constant will make the cloth have a harder texture like plastic.</p>
+  <p>The effect of changing the density: the lower the density the cloth will not colapse as much in the middle, and colapse more if density is higher.</p>
+  <p>The effect of chaning the damping: damping will shows how the cloth falling, if the damping is low, it will fall faster and swing back-and-forth at the bottom, whereas having a high damping will make the cloth fall as if there are high air resistance, or more rigit cloth.</p>
+  <p>High spring constant is similar to low density, and low spring constant is similar to high density.</p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/2reg.png" align="middle" width="400px"/>
+          <figcaption>regular cloth</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr align="center">
+        <td>
+          <img src="images/2highd.png" align="middle" width="400px"/>
+          <figcaption>2. high density</figcaption>
+        </td>
+        <td>
+          <img src="images/2lowd.png" align="middle" width="400px"/>
+          <figcaption>2. low density</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr align="center">
+        <td>
+          <img src="images/2highks.png" align="middle" width="400px"/>
+          <figcaption>3. high spring constant</figcaption>
+        </td>
+        <td>
+          <img src="images/2lowks.png" align="middle" width="400px"/>
+          <figcaption>3. low spring constant</figcaption>
+        </td>
+      </tr>
+    </table>
+    <div align="middle">
+      <table style="width:100%">
+        <tr align="center">
+          <td>
+            <img src="images/2.png" align="middle" width="400px"/>
+            <figcaption> density 15, ks 5000, damping 0.2</figcaption>
+          </td>
+        </tr>
+      </table>
+  </div>
+
+  <h2 align="middle">Part III: Handling collisions with other objects</h2>
+  <b> Show us screenshots of your shaded cloth from scene/sphere.json in its final resting state on the sphere using the default ks = 5000 as well as with ks = 500 and ks = 50000. Describe the differences in the results.</b>
+  <p> If using a lower spring constant cloth, the cloth wrap around the sphere would look more silky, if using high spring constant cloth would look like a heavy cloth wrap around the sphere, which is more stiff. 
+    As time passes, the cloth will eventually fall off from the sphere regardless of the spring constant.
+  </p>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/3ks500.png" align="middle" width="400px"/>
+          <figcaption>ks500
+          </figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr align="center">
+        <td>
+          <img src="images/3ks5000.png" align="middle" width="400px"/>
+          <figcaption>ks5000</figcaption>
+        </td>
+        <td>
+          <img src="images/3ks50000.png" align="middle" width="400px"/>
+          <figcaption>ks50000</figcaption>
+        </td>
+      </tr>
+      <br>
+      </table>
+  </div>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/3.1.png" align="middle" width="400px"/>
+          <figcaption>cloth lie on top of the surface</figcaption>
+        </td>
+      </tr>
+      <br>
+      </table>
+  </div>
+
+  <h2 align="middle">Part IV: Handling self-collisions</h2>
+  <b> Show us at least 3 screenshots that document how your cloth falls and folds on itself, starting with an early, initial self-collision and ending with the cloth at a more restful state (even if it is still slightly bouncy on the ground).</b>
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/part4-1.png" align="middle" width="400px"/>
+          <figcaption>initial state</figcaption>
+        </td>
+        <td>
+          <img src="images/part4-2.png" align="middle" width="400px"/>
+          <figcaption>early state</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr align="center">
+        <td>
+          <img src="images/part4-3.png" align="middle" width="400px"/>
+          <figcaption>middle state</figcaption>
+        </td>
+        <td>
+          <img src="images/part4-4.png" align="middle" width="400px"/>
+          <figcaption>almost finish falling</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr align="center">
+        <td>
+          <img src="images/part4-5.png" align="middle" width="400px"/>
+          <figcaption>ending direction 1</figcaption>
+        </td>
+        <td>
+          <img src="images/part4-6.png" align="middle" width="400px"/>
+          <figcaption>ending direction 2</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr align="center">
+        <td>
+          <img src="images/part4-7.png" align="middle" width="400px"/>
+          <figcaption>ending direction 3</figcaption>
+        </td>
+      </tr>
+      <br>
+      </table>
+  </div>
+  
+  <div>
+  <b> Vary the density as well as ks and describe with words and screenshots how they affect the behavior of the cloth as it falls on itself.  </b>
+  <p> Increasing the density seems to affect the mass of the cloth which cause stronger gravitational force acting on the cloth and therefore leads to
+    faster falling of the cloth.
+  </p>
+  <p> Decreasing the spring constant seems to make the cloth more flexible and prone to deformation since
+    the spring constants determins the stiffness of the springs connecting the point messes in the cloth. 
+  </p>
+  </div>
+
+  <div align="middle">
+    <table style="width:100%">
+      <tr align="center">
+        <td>
+          <img src="images/part4-5.png" align="middle" width="400px"/>
+          <figcaption>density: 15; ks: 5000</figcaption>
+        </td>
+        <td>
+          <img src="images/part4-8.png" align="middle" width="400px"/>
+          <figcaption>density: 60; ks: 5000</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr align="center">
+        <td>
+          <img src="images/part4-9.png" align="middle" width="400px"/>
+          <figcaption>density: 15; ks: 2500</figcaption>
+        </td>
+        <td>
+          <img src="images/part4-10.png" align="middle" width="400px"/>
+          <figcaption>density: 60; ks: 2500</figcaption>
+        </td>
+      </tr>
+      <br>
+    </table>
+  </div>
+
+</body>
 </html>
