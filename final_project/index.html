@@ -1,0 +1,396 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+    body {
+        padding: 100px;
+        width: 1000px;
+        margin: auto;
+        text-align: left;
+        font-weight: 300;
+        font-family: 'Open Sans', sans-serif;
+        color: #121212;
+    }
+    .video-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    h1, h2, h3, h4 {
+        font-family: 'Source Sans Pro', sans-serif;
+    }
+</style>
+<title>CS 184 Mesh Editor</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+<body>
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2024</h1>
+<h1 align="middle">Final Project: Mesh regularization & multiple Subdivision Schemes</h1>
+<h2 align="middle">Angel Tu, Youxun Liu, Jiacheng Song, and Zhen Fu</h2>
+<h3 align="middle">Slides URL: <a href="https://docs.google.com/presentation/d/1YEAIZIN_bEHoWQ-1oPEwJirgfHX6pgFTiNNci4pdx8c/edit#slide=id.p">Presentation Slides</a></h3>
+
+<div>
+<h2>
+    Abstract
+</h2>
+<p>
+    In this project, we explored different subdivision schemes and remeshing. 
+    We implemented the modified butterfly subdivision scheme and the sqrt3-Subdivision. 
+    We also implemented isotropic remeshing algorithm based on our newly-implemented local mesh 
+    operations vertex shift and edge collapse.
+</p>
+
+<h2>
+    Technical approach
+</h2>
+<h3>
+    Modified Butterfly Subdivision Scheme
+</h3>
+<p>
+    When we implement butterfly scheme, we computes a new scalar value for each edge midpoint of the triangulation with four 
+    distinguish cases.
+</p>
+<p>
+    Case 1: The edge connects two vertices of valence 6. We calculate weighted position of the new vertex
+    according to the following graph with a, b, c, and d representing different weights
+</p>
+    <img src="images/butterfly_scheme_2.png" align="middle" width="400px"/>
+<p>
+    Case 2: The edge connects a K-vertex (K != 6) and a 6-vertex. We calculate weighted position of the new vertex
+    according to the following graph with s0 to sj representing different weights depending on the value of K.
+</p>
+    <img src="images/butterfly_scheme_1.png" align="middle" width="400px"/>
+<p>
+    Case 3: The edge connects two extraordinary vertices. In this case, we take the average of the values computed using the 
+    method shown on case 2.
+</p>
+<p>
+    Case 4: Boundary Edges. In this case, we calculate the position of the new vertex using the 1-dimensional 4 point scheme.
+</p>
+
+<h3>
+    Sqrt3-Subdivision Scheme
+</h3>
+<p>
+    The sqrt3-subdivision operator inserts a new vertex for every triangle of the given mesh, 
+    using the following equation: q := 1/3 * (pi + pj + pk) where the new vertex q is simply inserted at the center of the triangle 
+    with vertices pi, pj, and pk.
+</p>
+<p>
+    And then we create new edges between q and pi, q and pj, and q and pk. We flip every original edge which connects two old vertices
+</p>
+<p>
+    At the end we update the position of the old vertices using the following relaxation equation: 
+</p>
+<img src="images/sqrt3_1.png" align="middle" width="400px"/>
+<img src="images/sqrt3_2.png" align="middle" width="400px"/>
+
+<h4>Adaptive Refinement in Sqrt3-Subdivision Scheme</h4>
+
+<p>
+    One of the advantage in the Sqrt3-Subdivision Scheme is that it is better suited for adaptive refinement. The 
+    consistency preserving adaptive refinement can easily be implemented by a simple recursive procedure.
+</p>
+<p>
+    For refinement schemes based on the dyadic split operation,  the
+    local splitting of one triangular face causes gaps if neighboring
+    faces are not refined (as shown on left). These gaps have to be removed
+    by replacing the adjacent (unrefined) faces with a triangle fan. As
+    shown on the right, this simple strategy tends to generate very badly
+    shaped triangles if no balance of the refinement is enforced.
+    <br>
+
+</p>
+
+<div align="middle">
+    <table>
+        <tr align="middle">
+        <td>
+            <img src="images/adaptive_1.jpg" align="middle" width="400px"/>
+            <figcaption align="middle"> The gap between triangles from different refinement levels
+                can be fixed by temporarily replacing the larger face by a triangle
+                fan</figcaption>
+        </td>
+        <td>
+            <img src="images/adaptive_2.jpg" align="middle" width="400px"/>
+            <figcaption align="middle"> The gap fixing by triangle fans tends to produce degenerate triangles if the refinement is not balanced (left). Balancing
+                the refinement, however, causes a larger region of the mesh to be
+                affected by local refinement (right).</figcaption>
+        </td>
+        </tr>
+    </table>
+</div>
+<p>
+    The adaptive refinement can be implemented by the following recursive procedure:
+</p>
+<img src="images/adaptive_3.jpg" align="middle" width="400px"/>
+
+<h3>
+    Remeshing
+</h3>
+<p>
+    Continuing from where we left off on homework 2, we implement extra local operations like edge collapsing and vertex shifting. And then we combine all these 
+    operations to implement our incremental remeshing method. <br><br>
+
+    To be more specific, For the <b>collapseEdge</b> function, it takes an edge as input and outputs a vertex. Our goal is to collapse the input edge to get a new mesh. 
+    Suppose the two vertices of this edge are v0 and v1, and we want to remove v0. Firstly, we traverse all the halfedges that have v0 as their vertex and modify 
+    their vertices to v1. Secondly, we reassign certain halfedges corresponding to some vertices and faces to prevent them from pointing to the halfedges that will 
+    be deleted. Then we reorganize the relationships between the halfedges so that they connect to form new triangles. Finally, we delete the surplus edges, faces, 
+    vertex and halfedges. <br><br>
+
+    And for <b>vertex shifting</b>, we sum up the positions of all vertices adjacent to the selected vertex and take the average to calculate the average 
+    position of the surrounding vertices. Then, we constrain the position of the vertex on surface through projection, rather than directly assigning the average 
+    position to this vertex. <br><br>
+    
+    Finally, we loop through Spliting, Collapsing, Flipping, vertex shifting, and projection to get our remeshed result.<br><br>
+
+    <b>Problems encountered:</b> Since <b>Collapse</b> deletes many mesh elements, which easily led to pointer errors and caused the program to crash, 
+    we spent so much time on it. We asked TA Tianyun for some debugging tips and discussed together and finally figured out that since we 
+    are deleting edges while we iterate through all the edges in the mesh, some edges may have been deleted before we get its edgeiter. So 
+    we add a set which contains all the edges that have been deleted during collapsing and avoid operating them in later process. <br><br>
+</p>
+  
+<h2>
+    Results
+</h2>
+<h3>
+    Subdivision
+</h3>
+<h3>
+    Cube.dae
+</h3>
+<h4>
+    Modified Butterfly Subdivision Scheme
+</h4>
+    <div align="middle">
+        <table>
+            <tr align="middle">
+            <td>
+                <img src="images/butterfly_1_cube.png" align="middle" width="400px"/>
+                <figcaption align="middle">Butterfly Level 1 Cube</figcaption>
+            </td>
+            <td>
+                <img src="images/butterfly_2_cube.png" align="middle" width="400px"/>
+                <figcaption align="middle">Butterfly Level 2 Cube</figcaption>
+            </td>
+            <td>
+                <img src="images/butterfly_5_cube.png" align="middle" width="400px"/>
+                <figcaption align="middle">Butterfly Level 5 Cube</figcaption>
+            </td>
+            </tr>
+        </table>
+    </div>
+<h4>
+    Sqrt3-Subdivision Scheme
+</h4>
+    <div align="middle">
+        <table>
+            <tr align="middle">
+            <td>
+                <img src="images/sqrt3_1_cube.png" align="middle" width="400px"/>
+                <figcaption align="middle">Sqrt3 Level 1 Cube</figcaption>
+            </td>
+            <td>
+                <img src="images/sqrt3_2_cube.png" align="middle" width="400px"/>
+                <figcaption align="middle">Sqrt3 Level 2 Cube</figcaption>
+            </td>
+            <td>
+                <img src="images/sqrt3_5_cube.png" align="middle" width="400px"/>
+                <figcaption align="middle">Sqrt3 Level 5 Cube</figcaption>
+            </td>
+            </tr>
+        </table>
+    </div>
+<h4>
+    Loop Subdivision
+</h4>
+    <div align="middle">
+        <table>
+            <tr align="middle">
+            <td>
+                <img src="images/loop_1_cube.png" align="middle" width="400px"/>
+                <figcaption align="middle">Loop Level 1 Cube</figcaption>
+            </td>
+            <td>
+                <img src="images/loop_2_cube.png" align="middle" width="400px"/>
+                <figcaption align="middle">Loop Level 2 Cube</figcaption>
+            </td>
+            <td>
+                <img src="images/loop_5_cube.png" align="middle" width="400px"/>
+                <figcaption align="middle">Loop Level 5 Cube</figcaption>
+            </td>
+            </tr>
+        </table>
+    </div>
+<h3>
+    teapot.dae
+</h3>
+<h4>
+    Modified Butterfly Subdivision Scheme
+</h4>
+    <div align="middle">
+        <table>
+            <tr align="middle">
+            <td>
+                <img src="images/butterfly_1_teapot.png" align="middle" width="400px"/>
+                <figcaption align="middle">Butterfly Level 1 Teapot</figcaption>
+            </td>
+            <td>
+                <img src="images/butterfly_2_teapot.png" align="middle" width="400px"/>
+                <figcaption align="middle">Butterfly Level 2 Teapot</figcaption>
+            </td>
+            <td>
+                <img src="images/butterfly_5_teapot.png" align="middle" width="400px"/>
+                <figcaption align="middle">Butterfly Level 5 Teapot</figcaption>
+            </td>
+            </tr>
+        </table>
+    </div>
+<h4>
+    Sqrt3-Subdivision Scheme
+</h4>
+    <div align="middle">
+        <table>
+            <tr align="middle">
+            <td>
+                <img src="images/sqrt3_1_teapot.png" align="middle" width="400px"/>
+                <figcaption align="middle">Sqrt3 Level 1 Teapot</figcaption>
+            </td>
+            <td>
+                <img src="images/sqrt3_2_teapot.png" align="middle" width="400px"/>
+                <figcaption align="middle">Sqrt3 Level 2 Teapot</figcaption>
+            </td>
+            <td>
+                <img src="images/sqrt3_5_teapot.png" align="middle" width="400px"/>
+                <figcaption align="middle">Sqrt3 Level 5 Teapot</figcaption>
+            </td>
+            </tr>
+        </table>
+    </div>
+<h4>
+    Loop Subdivision
+</h4>
+    <div align="middle">
+        <table>
+            <tr align="middle">
+            <td>
+                <img src="images/loop_1_teapot.png" align="middle" width="400px"/>
+                <figcaption align="middle">Loop Level 1 Teapot</figcaption>
+            </td>
+            <td>
+                <img src="images/loop_2_teapot.png" align="middle" width="400px"/>
+                <figcaption align="middle">Loop Level 2 Teapot</figcaption>
+            </td>
+            <td>
+                <img src="images/loop_5_teapot.png" align="middle" width="400px"/>
+                <figcaption align="middle">Loop Level 5 Teapot</figcaption>
+            </td>
+            </tr>
+        </table>
+    </div>
+<p>
+    As the images shown, all three schemes have the effect of smooth and finer. The Sqrt3 scheme forms fewer triangles compare to 
+    other schemes at the level goes up. The modified butterfly scheme produce images with more sharpness.
+</p>
+
+<h3>
+    teapot.dae
+</h3>
+<h4>
+    Adaptive refinement in sqrt3-Subdivision with random criteria
+</h4>
+    <div align="middle">
+        <table>
+            <tr align="middle">
+            <td>
+                <img src="images/adaptive_4.jpg" align="middle" width="400px"/>
+                <figcaption align="middle">With recursive split</figcaption>
+            </td>
+            <td>
+                <img src="images/adaptive_5.jpg" align="middle" width="400px"/>
+                <figcaption align="middle">without recursive split</figcaption>
+            </td>
+            </tr>
+        </table>
+    </div>
+
+
+<h4>
+    Video
+</h4>
+<div class="video-container">
+    <video width="640" height="360" controls>
+        <source src="images/bandicam 2024-04-16 18-46-21-521.mp4" type="video/mp4">
+    </video>
+</div>
+
+<h3>
+    Remeshing
+</h3>
+<h4> Collapsing: </h4>
+    <div align="middle">
+      <table>
+        <tr align="middle">
+          <td>
+            <img src="images/collapsebefore.png" align="middle" width="400px"/>
+            <figcaption align="middle">before</figcaption>
+          </td>
+          <td>
+            <img src="images/collapseafter.png" align="middle" width="400px"/>
+            <figcaption align="middle">after</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+<h4> Shifting: </h4>
+    <div align="middle">
+      <table>
+        <tr align="middle">
+          <td>
+            <img src="images/shiftbefore.png" align="middle" width="400px"/>
+            <figcaption align="middle">before</figcaption>
+          </td>
+          <td>
+            <img src="images/shiftafter.png" align="middle" width="400px"/>
+            <figcaption align="middle">after</figcaption>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+<h4>
+    Video
+</h4>
+<div class="video-container">
+    <video width="640" height="360" controls>
+        <source src="images/remeshingdone.mp4" type="video/mp4">
+    </video>
+</div>    
+  
+<h2>
+    References
+</h2>
+<p>
+    • https://mrl.cs.nyu.edu/~dzorin/papers/zorin1996ism.pdf<br>
+    • https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf<br>
+    • https://www.hao-li.com/cs599-ss2015/slides/Lecture09.1.pdf<br>
+    • https://www.graphics.rwth-aachen.de/media/papers/remeshing1.pdf<br>
+</p>
+
+<h2>
+    Contributions from each team member
+</h2>
+<p>
+    • Angel Tu: Modified Butterfly Subdivision Scheme, websites, and slides. <br>
+    • Jiacheng Song: Sqrt3 Subdivision Scheme with adaptive refinement<br>
+    • Youxun Liu:edge collapse, vertex shift, GUI remeshing, and slides. <br>
+    • Zhen Fu: edge collapse, vertex shift, remeshing, websites, and slides.<br>
+</p>
+
+</div>
+
+</body>
+</html>  
